@@ -4,11 +4,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { LogOut, Shield, Circle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "sonner";
 
 export function Navbar() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const navigate = useNavigate();
+  const [name, setname] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -26,6 +29,18 @@ export function Navbar() {
     };
   }, []);
 
+  useEffect(() => {
+     axios
+      .get("http://localhost:3000/api/auth/user", { withCredentials: true })
+      .then((res) => {
+        setname(res.data.user.username);
+      })
+      .catch(() => {
+        setname(null);
+      });
+  },[]);
+
+
   const formatDate = (d: Date) =>
     d.toLocaleDateString("en-US", {
       weekday: "long",
@@ -42,8 +57,14 @@ export function Navbar() {
       hour12: true,
     });
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await axios.post(
+      "http://localhost:3000/api/auth/logout",
+      {},
+      { withCredentials: true }
+    );
     navigate("/");
+    toast.success("Logout");
   };
 
   return (
@@ -89,11 +110,11 @@ export function Navbar() {
           <div className="flex items-center gap-2">
             <Avatar className="h-9 w-9 border-2 border-[#007BFF]">
               <AvatarFallback className="bg-[#007BFF] text-white">
-                OP
+                {(name?.substring(0,2))?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="text-left text-sm">
-              <p className="text-white">Operator</p>
+              <p className="text-white">{name}</p>
               <p className="text-gray-500">On Duty</p>
             </div>
           </div>
