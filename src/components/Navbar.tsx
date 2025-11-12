@@ -3,10 +3,12 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { LogOut, Shield, Circle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export function Navbar() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -39,6 +41,10 @@ export function Navbar() {
       second: "2-digit",
       hour12: true,
     });
+
+  const handleLogout = () => {
+    navigate("/");
+  };
 
   return (
     <nav className="border-b border-gray-800/50 bg-[#0F1218] px-6 py-3">
@@ -96,6 +102,7 @@ export function Navbar() {
             variant="ghost"
             size="icon"
             className="text-gray-400 hover:bg-[#FF3B3B]/10 hover:text-[#FF3B3B]"
+            onClick={handleLogout}
           >
             <LogOut className="h-5 w-5" />
           </Button>

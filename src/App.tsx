@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Sidebar } from "@/components/Sidebar";
-import { Dashboard } from "@/components/pages/Dashboard";
-import { LiveCameras } from "@/components/pages/LiveCameras";
-import { MapView } from "@/components/pages/MapView";
-import { AlertsPage } from "@/components/pages/AlertsPage";
 import { AlertPopup } from "@/components/AlertPopup";
-import {type Alert, type AlertStatus } from "@/components/AlertCard";
+import { type Alert, type AlertStatus } from "@/components/AlertCard";
 import { toast } from "sonner";
+import { Outlet } from "react-router-dom";
 
 const initialAlerts: Alert[] = [
   {
@@ -58,7 +55,6 @@ const initialAlerts: Alert[] = [
 ];
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState("dashboard");
   const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
   const [popupAlert, setPopupAlert] = useState<Alert | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -82,7 +78,7 @@ export default function App() {
       toast.error("New Alert Detected!", {
         description: `${newAlert.deviceId} - ${newAlert.location}`,
       });
-    }, 15000);
+    }, 5000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -130,47 +126,21 @@ export default function App() {
     setIsPopupOpen(true);
   };
 
-  const renderPage = () => {
-    switch (currentPage) {
-      case "dashboard":
-        return (
-          <Dashboard
-            alerts={alerts}
-            onAlertClick={handleAlertClick}
-            onConfirmAlert={handleConfirmAlert}
-            onDismissAlert={handleDismissAlert}
-          />
-        );
-      case "cameras":
-        return <LiveCameras />;
-      case "map":
-        return <MapView />;
-      case "alerts":
-        return (
-          <AlertsPage
-            alerts={alerts}
-            onConfirmAlert={handleConfirmAlert}
-            onDismissAlert={handleDismissAlert}
-          />
-        );
-      default:
-        return (
-          <Dashboard
-            alerts={alerts}
-            onAlertClick={handleAlertClick}
-            onConfirmAlert={handleConfirmAlert}
-            onDismissAlert={handleDismissAlert}
-          />
-        );
-    }
-  };
-
   return (
     <div className="h-screen bg-[#0A0E16] flex flex-col">
       <Navbar />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
-        <main className="flex-1 overflow-hidden">{renderPage()}</main>
+        <Sidebar />
+        <main className="flex-1 overflow-hidden">
+          <Outlet
+            context={{
+              alerts,
+              onAlertClick: handleAlertClick,
+              onConfirmAlert: handleConfirmAlert,
+              onDismissAlert: handleDismissAlert,
+            }}
+          />
+        </main>
       </div>
 
       <AlertPopup

@@ -1,4 +1,5 @@
-import {type Alert } from "@/components/AlertCard";
+import { useOutletContext } from "react-router-dom";
+import { type Alert } from "@/components/AlertCard";
 import { StatsCard } from "@/components/StatsCard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,19 +18,17 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-interface DashboardProps {
+interface DashboardContext {
   alerts: Alert[];
   onAlertClick: (alert: Alert) => void;
   onConfirmAlert: (alertId: string) => void;
   onDismissAlert: (alertId: string) => void;
 }
 
-export function Dashboard({
-  alerts,
-  onAlertClick,
-  onConfirmAlert,
-  onDismissAlert,
-}: DashboardProps) {
+export function Dashboard() {
+  const { alerts, onAlertClick, onConfirmAlert, onDismissAlert } =
+    useOutletContext<DashboardContext>();
+
   const pendingAlerts = alerts.filter((a) => a.status === "PENDING");
   const confirmedToday = alerts.filter(
     (a) =>

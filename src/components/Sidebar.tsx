@@ -1,29 +1,28 @@
 import { Home, Video, Bell, Map } from "lucide-react";
 import { motion } from "framer-motion";
-
-interface SidebarProps {
-  currentPage: string;
-  onNavigate: (page: string) => void;
-}
+import { useLocation, useNavigate } from "react-router-dom";
 
 const menuItems = [
-  { id: "dashboard", label: "Home", icon: Home },
-  { id: "cameras", label: "Live Cameras", icon: Video },
-  { id: "alerts", label: "Alerts", icon: Bell },
-  { id: "map", label: "Map View", icon: Map },
+  { id: "home", label: "Home", icon: Home, path: "/home" },
+  { id: "livecamera", label: "Live Cameras", icon: Video, path: "/livecamera" },
+  { id: "alerts", label: "Alerts", icon: Bell, path: "/alerts" },
+  { id: "map", label: "Map View", icon: Map, path: "/map" },
 ];
 
-export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
+export function Sidebar() {
+  const location = useLocation();
+  const navigate = useNavigate();
   return (
     <aside className="w-64 border-r border-gray-800/50 bg-[#0A0E16]">
       <div className="space-y-2 p-4">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = currentPage === item.id;
+          const isActive = location.pathname === item.path;
+
           return (
             <motion.button
               key={item.id}
-              onClick={() => onNavigate(item.id)}
+              onClick={() => navigate(item.path)}
               className={`relative w-full rounded-lg px-4 py-3 text-left transition-colors ${
                 isActive
                   ? "bg-[#007BFF]/20 text-[#007BFF]"
