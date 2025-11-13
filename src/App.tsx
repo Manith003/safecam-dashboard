@@ -60,28 +60,28 @@ export default function App() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   // Simulate new alert (demo)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const newAlert: Alert = {
-        id: `#A-${Math.floor(Math.random() * 10000)}`,
-        deviceId: "Pi-Unit-001",
-        location: "Loyola College",
-        timestamp: new Date(),
-        status: "PENDING",
-        latitude: 13.0827,
-        longitude: 80.2707,
-      };
-      setAlerts((prev) => [newAlert, ...prev]);
-      setPopupAlert(newAlert);
-      setIsPopupOpen(true);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     const newAlert: Alert = {
+  //       id: `#A-${Math.floor(Math.random() * 10000)}`,
+  //       deviceId: "Pi-Unit-001",
+  //       location: "Loyola College",
+  //       timestamp: new Date(),
+  //       status: "PENDING",
+  //       latitude: 13.0827,
+  //       longitude: 80.2707,
+  //     };
+  //     setAlerts((prev) => [newAlert, ...prev]);
+  //     setPopupAlert(newAlert);
+  //     setIsPopupOpen(true);
 
-      toast.error("New Alert Detected!", {
-        description: `${newAlert.deviceId} - ${newAlert.location}`,
-      });
-    }, 5000);
+  //     toast.error("New Alert Detected!", {
+  //       description: `${newAlert.deviceId} - ${newAlert.location}`,
+  //     });
+  //   }, 5000);
 
-    return () => clearTimeout(timer);
-  }, []);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   const handleConfirmAlert = (alertId: string) => {
     setAlerts((prev) =>
