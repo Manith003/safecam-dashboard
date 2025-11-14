@@ -5,53 +5,54 @@ import { AlertPopup } from "@/components/AlertPopup";
 import { type Alert, type AlertStatus } from "@/components/AlertCard";
 import { toast } from "sonner";
 import { Outlet } from "react-router-dom";
+import { socket } from "./lib/socket";
 
 const initialAlerts: Alert[] = [
-  {
-    id: "#A-12345",
-    deviceId: "Pi-Unit-001",
-    location: "Loyola College",
-    timestamp: new Date(Date.now() - 10000),
-    status: "PENDING",
-    latitude: 13.0827,
-    longitude: 80.2707,
-  },
-  {
-    id: "#A-12344",
-    deviceId: "Pi-Unit-003",
-    location: "Anna Nagar Park",
-    timestamp: new Date(Date.now() - 300000),
-    status: "PENDING",
-    latitude: 13.085,
-    longitude: 80.2101,
-  },
-  {
-    id: "#A-12343",
-    deviceId: "Pi-Unit-002",
-    location: "T. Nagar Bus Stand",
-    timestamp: new Date(Date.now() - 7200000),
-    status: "CONFIRMED",
-    latitude: 13.0418,
-    longitude: 80.2341,
-  },
-  {
-    id: "#A-12342",
-    deviceId: "Pi-Unit-005",
-    location: "Marina Beach Entrance",
-    timestamp: new Date(Date.now() - 14400000),
-    status: "DISMISSED",
-    latitude: 13.0499,
-    longitude: 80.2824,
-  },
-  {
-    id: "#A-12341",
-    deviceId: "Pi-Unit-004",
-    location: "Central Railway Station",
-    timestamp: new Date(Date.now() - 86400000),
-    status: "CONFIRMED",
-    latitude: 13.0827,
-    longitude: 80.275,
-  },
+  // {
+  //   id: "#A-12345",
+  //   deviceId: "Pi-Unit-001",
+  //   location: "Loyola College",
+  //   timestamp: new Date(Date.now() - 10000),
+  //   status: "PENDING",
+  //   latitude: 13.0827,
+  //   longitude: 80.2707,
+  // },
+  // {
+  //   id: "#A-12344",
+  //   deviceId: "Pi-Unit-003",
+  //   location: "Anna Nagar Park",
+  //   timestamp: new Date(Date.now() - 300000),
+  //   status: "PENDING",
+  //   latitude: 13.085,
+  //   longitude: 80.2101,
+  // },
+  // {
+  //   id: "#A-12343",
+  //   deviceId: "Pi-Unit-002",
+  //   location: "T. Nagar Bus Stand",
+  //   timestamp: new Date(Date.now() - 7200000),
+  //   status: "CONFIRMED",
+  //   latitude: 13.0418,
+  //   longitude: 80.2341,
+  // },
+  // {
+  //   id: "#A-12342",
+  //   deviceId: "Pi-Unit-005",
+  //   location: "Marina Beach Entrance",
+  //   timestamp: new Date(Date.now() - 14400000),
+  //   status: "DISMISSED",
+  //   latitude: 13.0499,
+  //   longitude: 80.2824,
+  // },
+  // {
+  //   id: "#A-12341",
+  //   deviceId: "Pi-Unit-004",
+  //   location: "Central Railway Station",
+  //   timestamp: new Date(Date.now() - 86400000),
+  //   status: "CONFIRMED",
+  //   latitude: 13.0827,
+  //   longitude: 80.275,
+  // },
 ];
 
 export default function App() {
@@ -59,29 +60,27 @@ export default function App() {
   const [popupAlert, setPopupAlert] = useState<Alert | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-  // Simulate new alert (demo)
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     const newAlert: Alert = {
-  //       id: `#A-${Math.floor(Math.random() * 10000)}`,
-  //       deviceId: "Pi-Unit-001",
-  //       location: "Loyola College",
-  //       timestamp: new Date(),
-  //       status: "PENDING",
-  //       latitude: 13.0827,
-  //       longitude: 80.2707,
-  //     };
-  //     setAlerts((prev) => [newAlert, ...prev]);
-  //     setPopupAlert(newAlert);
-  //     setIsPopupOpen(true);
+  // Simulate new alert
+  useEffect(() => {
+    socket.on("new_alert_broadcast", (data) => {
+      const newAlert: Alert = {
+        ...data,
+        timestamp: new Date(data.timestamp * 1000),
+      };
+      setAlerts((prev) => [newAlert, ...prev]);
+      
+      setPopupAlert(newAlert);
+      setIsPopupOpen(true);
 
-  //     toast.error("New Alert Detected!", {
-  //       description: `${newAlert.deviceId} - ${newAlert.location}`,
-  //     });
-  //   }, 5000);
+      toast.error("New Alert Detected!", {
+        description: `${newAlert.deviceId} - ${newAlert.location}`,
+      });
+    });
 
-  //   return () => clearTimeout(timer);
-  // }, []);
+    return () => {
+      socket.off("new_alert_broadcast");
+    };
+  }, []);
 
   const handleConfirmAlert = (alertId: string) => {
     setAlerts((prev) =>
@@ -92,7 +91,7 @@ export default function App() {
       )
     );
     if (popupAlert?.id === alertId) setIsPopupOpen(false);
-
+    socket.emit("trigger_siren", { deviceId: popupAlert?.deviceId });
     toast.success("Alert Confirmed", {
       description: "The incident has been confirmed and logged.",
     });
@@ -114,6 +113,7 @@ export default function App() {
   };
 
   const handleTriggerSiren = () => {
+    socket.emit("trigger_siren", { deviceId: popupAlert?.deviceId });
     toast.error("Siren Triggered!", {
       description: "Emergency siren has been activated at the location.",
     });
