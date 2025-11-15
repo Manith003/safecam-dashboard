@@ -6,75 +6,40 @@ import { type Alert, type AlertStatus } from "@/components/AlertCard";
 import { toast } from "sonner";
 import { Outlet } from "react-router-dom";
 import { socket } from "./lib/socket";
-
-const initialAlerts: Alert[] = [
-  // {
-  //   id: "#A-12345",
-  //   deviceId: "Pi-Unit-001",
-  //   location: "Loyola College",
-  //   timestamp: new Date(Date.now() - 10000),
-  //   status: "PENDING",
-  //   latitude: 13.0827,
-  //   longitude: 80.2707,
-  // },
-  // {
-  //   id: "#A-12344",
-  //   deviceId: "Pi-Unit-003",
-  //   location: "Anna Nagar Park",
-  //   timestamp: new Date(Date.now() - 300000),
-  //   status: "PENDING",
-  //   latitude: 13.085,
-  //   longitude: 80.2101,
-  // },
-  // {
-  //   id: "#A-12343",
-  //   deviceId: "Pi-Unit-002",
-  //   location: "T. Nagar Bus Stand",
-  //   timestamp: new Date(Date.now() - 7200000),
-  //   status: "CONFIRMED",
-  //   latitude: 13.0418,
-  //   longitude: 80.2341,
-  // },
-  // {
-  //   id: "#A-12342",
-  //   deviceId: "Pi-Unit-005",
-  //   location: "Marina Beach Entrance",
-  //   timestamp: new Date(Date.now() - 14400000),
-  //   status: "DISMISSED",
-  //   latitude: 13.0499,
-  //   longitude: 80.2824,
-  // },
-  // {
-  //   id: "#A-12341",
-  //   deviceId: "Pi-Unit-004",
-  //   location: "Central Railway Station",
-  //   timestamp: new Date(Date.now() - 86400000),
-  //   status: "CONFIRMED",
-  //   latitude: 13.0827,
-  //   longitude: 80.275,
-  // },
-];
+import axios from "axios";
 
 export default function App() {
-  const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [popupAlert, setPopupAlert] = useState<Alert | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   // Simulate new alert
   useEffect(() => {
-    socket.on("new_alert_broadcast", (data) => {
+    socket.on("new_alert_broadcast", async (data) => {
       const newAlert: Alert = {
         ...data,
         timestamp: new Date(data.timestamp * 1000),
       };
       setAlerts((prev) => [newAlert, ...prev]);
-      
+
       setPopupAlert(newAlert);
       setIsPopupOpen(true);
-
       toast.error("New Alert Detected!", {
         description: `${newAlert.deviceId} - ${newAlert.location}`,
       });
+      try {
+        await axios.post("http://localhost:3000/api/alert/new", {
+          id: newAlert.id,
+          deviceId: newAlert.deviceId,
+          location: newAlert.location,
+          latitude: newAlert.latitude,
+          longitude: newAlert.longitude,
+          status: "PENDING",
+          timestamp: newAlert.timestamp,
+        },{ withCredentials: true });
+      } catch (err) {
+        console.error("Failed to save alert:", err);
+      }
     });
 
     return () => {
@@ -82,7 +47,27 @@ export default function App() {
     };
   }, []);
 
-  const handleConfirmAlert = (alertId: string) => {
+  useEffect(() => {
+  async function loadAlerts() {
+    try {
+      const res = await axios.get("http://localhost:3000/api/alert/all");
+
+      const dbAlerts = res.data.alerts.map((a: any) => ({
+        ...a,
+        timestamp: new Date(a.timestamp),
+      }));
+
+      setAlerts(dbAlerts);
+    } catch (err) {
+      console.error("Failed to fetch alerts:", err);
+    }
+  }
+
+  loadAlerts();
+}, []);
+
+
+  const handleConfirmAlert = async (alertId: string) => {
     setAlerts((prev) =>
       prev.map((alert) =>
         alert.id === alertId
@@ -91,13 +76,22 @@ export default function App() {
       )
     );
     if (popupAlert?.id === alertId) setIsPopupOpen(false);
+
     socket.emit("trigger_siren", { deviceId: popupAlert?.deviceId });
     toast.success("Alert Confirmed", {
       description: "The incident has been confirmed and logged.",
     });
+    try {
+      await axios.post("http://localhost:3000/api/alert/confirm", {
+        id: alertId,
+      },{ withCredentials: true });
+    } catch (err) {
+      console.error("Failed to confirm alert:", err);
+    }
   };
 
-  const handleDismissAlert = (alertId: string) => {
+  const handleDismissAlert = async (alertId: string) => {
+    
     setAlerts((prev) =>
       prev.map((alert) =>
         alert.id === alertId
@@ -110,6 +104,11 @@ export default function App() {
     toast.info("Alert Dismissed", {
       description: "The alert has been marked as false alarm.",
     });
+    try {
+      await axios.post("http://localhost:3000/api/alert/dismiss", { id: alertId },{ withCredentials: true });
+    } catch (err) {
+      console.error("Failed to dismiss alert:", err);
+    }
   };
 
   const handleTriggerSiren = () => {
