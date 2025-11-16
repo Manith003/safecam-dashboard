@@ -10,13 +10,13 @@ import {
   CheckCircle,
   Clock,
   MapPin,
-  Radio,
   Circle,
   Camera,
   CheckCircle2,
   XCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { usePiWebRTC } from "@/hooks/usePiWebRTC";
 
 interface DashboardContext {
   alerts: Alert[];
@@ -28,6 +28,9 @@ interface DashboardContext {
 export function Dashboard() {
   const { alerts, onAlertClick, onConfirmAlert, onDismissAlert } =
     useOutletContext<DashboardContext>();
+
+    const { videoRef } = usePiWebRTC("Pi-Unit-001");
+
 
   const pendingAlerts = alerts.filter((a) => a.status === "PENDING");
   const confirmedToday = alerts.filter(
@@ -190,11 +193,13 @@ export function Dashboard() {
 
             <div className="relative aspect-video overflow-hidden rounded-lg bg-gray-900">
               <div className="flex h-full items-center justify-center">
-                <div className="text-center">
-                  <Radio className="mx-auto h-12 w-12 animate-pulse text-[#007BFF]" />
-                  <p className="mt-2 text-white">Camera Feed</p>
-                  <p className="text-gray-400">Loyola College</p>
-                </div>
+                <video
+                ref={videoRef}
+                className="object-cover w-full h-full bg-black"
+                autoPlay
+                playsInline
+                muted={true}
+              />
               </div>
 
               <div className="absolute left-3 top-3 flex items-center gap-2 rounded bg-[#FF3B3B] px-2 py-1">

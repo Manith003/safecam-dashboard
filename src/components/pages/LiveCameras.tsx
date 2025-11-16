@@ -2,8 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Circle, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
-import { useEffect, useRef } from "react";
-import { socket } from "../../lib/socket";
+import { usePiWebRTC } from "@/hooks/usePiWebRTC";
 
 const camera = {
   id: "Pi-Unit-001",
@@ -14,108 +13,7 @@ const camera = {
 };
 
 export function LiveCameras() {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const pcRef = useRef<RTCPeerConnection | null>(null);
-
-  useEffect(() => {
-    socket.emit("dashboard_ready", { deviceId: camera.id });
-    if (pcRef.current) {
-      try {
-        pcRef.current.close();
-      } catch(e) {console.log(e)}
-    }
-
-    // Create new PeerConnection
-    const pc = new RTCPeerConnection({
-      iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
-    });
-    pcRef.current = pc;
-
-    // Attach remote track (video)
-    pc.ontrack = (event) => {
-      if (!videoRef.current) return;
-
-      videoRef.current.srcObject = event.streams[0];
-
-      videoRef.current
-        .play()
-        .then(() => console.log("🎥 Video stream is playing"))
-        .catch((err) =>
-          console.warn("⚠ Video play issue (ignored by browser):", err)
-        );
-    };
-    // Receive OFFER from Pi
-    socket.on("webrtc_offer", async (data: any) => {
-      if (!data || data.deviceId !== camera.id) return;
-
-      console.log("📡 Received OFFER from Pi");
-
-      try {
-        await pc.setRemoteDescription(
-          new RTCSessionDescription({
-            type: "offer",
-            sdp: data.sdp,
-          })
-        );
-
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-
-        socket.emit("webrtc_answer", {
-          deviceId: camera.id,
-          sdp: answer.sdp,
-          type: answer.type,
-        });
-
-        console.log("📡 Sent ANSWER to Pi");
-      } catch (err) {
-        console.error("❌ Error handling offer:", err);
-      }
-    });
-    // Receive ICE from Pi
-    socket.on("webrtc_ice_candidate", async (data: any) => {
-      try {
-        if (!data || data.deviceId !== camera.id) return;
-
-        if (!data.candidate) return;
-
-        await pc.addIceCandidate(
-          new RTCIceCandidate({
-            candidate: data.candidate,
-            sdpMid: data.sdpMid,
-            sdpMLineIndex: data.sdpMLineIndex,
-          })
-        );
-
-        console.log("✅ Added ICE candidate from Pi");
-      } catch (err) {
-        console.warn("❌ Error adding ICE candidate:", err);
-      }
-    });
-    // Send ICE to Pi
-    pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("webrtc_ice_candidate", {
-          deviceId: camera.id,
-          candidate: event.candidate.candidate,
-          sdpMid: event.candidate.sdpMid,
-          sdpMLineIndex: event.candidate.sdpMLineIndex,
-        });
-      }
-    };
-
-    // Cleanup listener + pc
-    return () => {
-      socket.off("webrtc_offer");
-      socket.off("webrtc_ice_candidate");
-
-      if (pcRef.current) {
-        pcRef.current.close();
-        pcRef.current = null;
-      }
-    };
-  }, []);
-
+  const { videoRef } = usePiWebRTC(camera.id);
   return (
     <div className="h-full overflow-y-auto bg-neutral-800 p-6">
       <div className="mb-6 flex items-center justify-between">
