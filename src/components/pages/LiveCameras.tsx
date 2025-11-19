@@ -13,7 +13,8 @@ const camera = {
 };
 
 export function LiveCameras() {
-  const { videoRef } = usePiWebRTC(camera.id);
+  const { stream } = usePiWebRTC(camera.id);
+
   return (
     <div className="h-full overflow-y-auto bg-neutral-800 p-6">
       <div className="mb-6 flex items-center justify-between">
@@ -40,11 +41,13 @@ export function LiveCameras() {
           <Card className="overflow-hidden border-gray-800/50 bg-gradient-to-br from-[#161B22] to-[#0F1218]">
             <div className="relative aspect-video bg-gray-900">
               <video
-                ref={videoRef}
-                className="object-cover w-full h-full bg-black"
+                ref={(el) => {
+                  if (el && stream) el.srcObject = stream;
+                }}
                 autoPlay
                 playsInline
-                muted={true}
+                muted
+                className="w-full h-full object-cover"
               />
 
               <div className="absolute right-4 top-4 flex items-center gap-2 rounded-full bg-green-700 px-4 py-2">
@@ -99,4 +102,3 @@ export function LiveCameras() {
     </div>
   );
 }
-

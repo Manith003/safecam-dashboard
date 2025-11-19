@@ -28,9 +28,8 @@ interface DashboardContext {
 export function Dashboard() {
   const { alerts, onAlertClick, onConfirmAlert, onDismissAlert } =
     useOutletContext<DashboardContext>();
-
-    const { videoRef } = usePiWebRTC("Pi-Unit-001");
-
+    
+  const { stream } = usePiWebRTC("Pi-Unit-001");
 
   const pendingAlerts = alerts.filter((a) => a.status === "PENDING");
   const confirmedToday = alerts.filter(
@@ -49,10 +48,30 @@ export function Dashboard() {
   return (
     <div className="h-full overflow-y-auto bg-neutral-800 p-6">
       <div className="mb-6 grid grid-cols-4 gap-4">
-        <StatsCard icon={Video} label="Active Cameras" value={1} color="#007BFF" />
-        <StatsCard icon={Bell} label="Alerts Today" value={pendingAlerts.length} color="#FF3B3B" />
-        <StatsCard icon={CheckCircle} label="Confirmed Incidents" value={confirmedToday} color="#00C853" />
-        <StatsCard icon={Clock} label="Pending Reviews" value={pendingAlerts.length} color="#FFA726" />
+        <StatsCard
+          icon={Video}
+          label="Active Cameras"
+          value={1}
+          color="#007BFF"
+        />
+        <StatsCard
+          icon={Bell}
+          label="Alerts Today"
+          value={pendingAlerts.length}
+          color="#FF3B3B"
+        />
+        <StatsCard
+          icon={CheckCircle}
+          label="Confirmed Incidents"
+          value={confirmedToday}
+          color="#00C853"
+        />
+        <StatsCard
+          icon={Clock}
+          label="Pending Reviews"
+          value={pendingAlerts.length}
+          color="#FFA726"
+        />
       </div>
 
       <div className="grid grid-cols-3 gap-6">
@@ -76,7 +95,9 @@ export function Dashboard() {
                 >
                   <Card
                     className={`border-gray-800/50 bg-gradient-to-br from-[#161B22] to-[#0F1218] p-4 transition-all hover:border-[#007BFF]/50 ${
-                      alert.status === "PENDING" ? "border-l-4 border-l-[#990606]" : ""
+                      alert.status === "PENDING"
+                        ? "border-l-4 border-l-[#990606]"
+                        : ""
                     }`}
                     onClick={() => onAlertClick(alert)}
                   >
@@ -194,12 +215,14 @@ export function Dashboard() {
             <div className="relative aspect-video overflow-hidden rounded-lg bg-gray-900">
               <div className="flex h-full items-center justify-center">
                 <video
-                ref={videoRef}
-                className="object-cover w-full h-full bg-black"
-                autoPlay
-                playsInline
-                muted={true}
-              />
+                  ref={(el) => {
+                    if (el && stream) el.srcObject = stream;
+                  }}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               <div className="absolute left-3 top-3 flex items-center gap-2 rounded bg-[#FF3B3B] px-2 py-1">
@@ -226,7 +249,7 @@ export function Dashboard() {
                 <span className="text-white">12</span>
               </div>
             </div>
-          </Card>  
+          </Card>
         </div>
       </div>
     </div>

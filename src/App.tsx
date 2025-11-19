@@ -12,6 +12,7 @@ export default function App() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [popupAlert, setPopupAlert] = useState<Alert | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [sirenActive, setSirenActive] = useState(false);
 
   // Simulate new alert
   useEffect(() => {
@@ -68,6 +69,17 @@ export default function App() {
 
 
   const handleConfirmAlert = async (alertId: string) => {
+    if (!sirenActive) {
+    setSirenActive(true);
+
+    socket.emit("trigger_siren", { deviceId: popupAlert?.deviceId });
+
+    toast.error("Siren Triggered!", {
+      description: "Emergency siren has been activated at the location.",
+    });
+  } else {
+    console.log("⏳ Siren already active — ignoring duplicate trigger");
+  }
     setAlerts((prev) =>
       prev.map((alert) =>
         alert.id === alertId
@@ -111,14 +123,14 @@ export default function App() {
     }
   };
 
-  const handleTriggerSiren = () => {
-    socket.emit("trigger_siren", { deviceId: popupAlert?.deviceId });
-    toast.error("Siren Triggered!", {
-      description: "Emergency siren has been activated at the location.",
-    });
+  // const handleTriggerSiren = () => {
+  //   socket.emit("trigger_siren", { deviceId: popupAlert?.deviceId });
+  //   toast.error("Siren Triggered!", {
+  //     description: "Emergency siren has been activated at the location.",
+  //   });
 
-    if (popupAlert) handleConfirmAlert(popupAlert.id);
-  };
+  //   if (popupAlert) handleConfirmAlert(popupAlert.id);
+  // };
 
   const handleAlertClick = (alert: Alert) => {
     setPopupAlert(alert);
@@ -148,7 +160,7 @@ export default function App() {
         onClose={() => setIsPopupOpen(false)}
         onConfirm={() => popupAlert && handleConfirmAlert(popupAlert.id)}
         onDismiss={() => popupAlert && handleDismissAlert(popupAlert.id)}
-        onTriggerSiren={handleTriggerSiren}
+        // onTriggerSiren={handleTriggerSiren} //later added trigger button if want.
       />
     </div>
   );

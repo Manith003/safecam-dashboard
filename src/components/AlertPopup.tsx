@@ -11,12 +11,14 @@ import {
   Clock,
   User,
   Radio,
-  Siren,
+  // Siren,
   XCircle,
   CheckCircle,
   Bell,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { usePiWebRTC } from "@/hooks/usePiWebRTC";
+import { useEffect, useRef } from "react";
 
 interface AlertPopupProps {
   alert: Alert | null;
@@ -24,7 +26,7 @@ interface AlertPopupProps {
   onClose: () => void;
   onConfirm: () => void;
   onDismiss: () => void;
-  onTriggerSiren: () => void;
+  // onTriggerSiren: () => void; //later added trigger button if want.
 }
 
 export function AlertPopup({
@@ -33,8 +35,25 @@ export function AlertPopup({
   onClose,
   onConfirm,
   onDismiss,
-  onTriggerSiren,
+  // onTriggerSiren, //later added trigger button if want.
 }: AlertPopupProps) {
+  const { stream } = usePiWebRTC("Pi-Unit-001");
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const timeout = setTimeout(() => {
+      if (videoRef.current && stream) {
+        console.log("🎥 Attaching stream inside AlertPopup");
+        videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(() => {});
+      }
+    }, 100); 
+
+    return () => clearTimeout(timeout);
+  }, [stream, isOpen]);
+
   if (!alert) return null;
 
   const getTimeAgo = (date: Date) => {
@@ -79,16 +98,17 @@ export function AlertPopup({
               </div>
             </div>
 
-            {/* Video Frame */}
+            {/* Live Video */}
             <div className="mb-4 overflow-hidden rounded-lg border-2 border-[#FF3B3B]/30">
               <div className="relative aspect-video bg-gradient-to-br from-gray-900 to-black">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <Radio className="mx-auto h-16 w-16 animate-pulse text-[#FF3B3B]" />
-                    <p className="mt-3 text-white">Live Video Feed</p>
-                    <p className="text-gray-400">{alert.deviceId}</p>
-                  </div>
-                </div>
+
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                />
 
                 <div className="absolute left-4 top-4 flex items-center gap-2 rounded bg-[#FF3B3B] px-3 py-2">
                   <div className="h-2 w-2 animate-pulse rounded-full bg-white"></div>
@@ -120,11 +140,7 @@ export function AlertPopup({
             {/* Details */}
             <div className="mb-6 grid grid-cols-2 gap-4">
               <SmallStat label="Device ID" icon={User} value={alert.deviceId} />
-              <SmallStat
-                label="Location"
-                icon={MapPin}
-                value={alert.location}
-              />
+              <SmallStat label="Location" icon={MapPin} value={alert.location} />
               <SmallStat
                 label="Time"
                 icon={Clock}
@@ -152,13 +168,13 @@ export function AlertPopup({
                 False Alert
               </Button>
 
-              <Button
+              {/* <Button
                 onClick={onTriggerSiren}
                 className="flex-1 animate-pulse bg-[#FF3B3B] py-6 px-2 text-white hover:bg-[#dd2222]"
               >
                 <Siren className="mr-2 h-5 w-5 md:mr-1" />
                 Trigger Siren
-              </Button>
+              </Button> */} 
             </div>
           </div>
         </motion.div>
