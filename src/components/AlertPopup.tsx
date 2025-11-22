@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { usePiWebRTC } from "@/hooks/usePiWebRTC";
-import { useEffect, useRef } from "react";
+// import { useEffect, useRef } from "react";
 
 interface AlertPopupProps {
   alert: Alert | null;
@@ -38,21 +38,28 @@ export function AlertPopup({
   // onTriggerSiren, //later added trigger button if want.
 }: AlertPopupProps) {
   const { stream } = usePiWebRTC("Pi-Unit-001");
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  // const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  useEffect(() => {
-    if (!isOpen) return;
+  // useEffect(() => {
+  //   if (!isOpen) return;
 
-    const timeout = setTimeout(() => {
-      if (videoRef.current && stream) {
-        console.log("🎥 Attaching stream inside AlertPopup");
-        videoRef.current.srcObject = stream;
-        videoRef.current.play().catch(() => {});
-      }
-    }, 100); 
+  //   const timeout = setTimeout(() => {
+  //     if (videoRef.current && stream) {
+  //       console.log("🎥 Attaching stream inside AlertPopup");
+  //       videoRef.current.srcObject = stream;
+  //       videoRef.current.play().catch(() => {});
+  //     }
+  //   }, 100); 
 
-    return () => clearTimeout(timeout);
-  }, [stream, isOpen]);
+  //   return () => clearTimeout(timeout);
+  // }, [stream, isOpen]);
+  const setVideoRef = (videoElement: HTMLVideoElement | null) => {
+    if (videoElement && stream) {
+      console.log("🎥 Attaching stream to Popup Video");
+      videoElement.srcObject = stream;
+      videoElement.play().catch((e) => console.error("Autoplay blocked", e));
+    }
+  };
 
   if (!alert) return null;
 
@@ -103,7 +110,7 @@ export function AlertPopup({
               <div className="relative aspect-video bg-gradient-to-br from-gray-900 to-black">
 
                 <video
-                  ref={videoRef}
+                  ref={setVideoRef}
                   autoPlay
                   playsInline
                   muted
