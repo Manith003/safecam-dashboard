@@ -45,6 +45,11 @@ export function LoginPage() {
     <div className="bg-neutral-800 h-full w-full flex items-center justify-center">
       <Card>
         <CardHeader>
+          <div className="flex items-center justify-center">
+            <img src="/logo.png" alt="SafeCAM+ Logo" className="w-10" />
+            <h2>logo need to be updated</h2>
+          </div>
+
           <CardTitle>Login</CardTitle>
           <CardDescription>
             Enter your username and password to continue
