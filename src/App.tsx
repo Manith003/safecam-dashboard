@@ -29,15 +29,19 @@ export default function App() {
         description: `${newAlert.deviceId} - ${newAlert.location}`,
       });
       try {
-        await axios.post("http://localhost:3000/api/alert/new", {
-          id: newAlert.id,
-          deviceId: newAlert.deviceId,
-          location: newAlert.location,
-          latitude: newAlert.latitude,
-          longitude: newAlert.longitude,
-          status: "PENDING",
-          timestamp: newAlert.timestamp,
-        },{ withCredentials: true });
+        await axios.post(
+          "http://localhost:3000/api/alert/new",
+          {
+            id: newAlert.id,
+            deviceId: newAlert.deviceId,
+            location: newAlert.location,
+            latitude: newAlert.latitude,
+            longitude: newAlert.longitude,
+            status: "PENDING",
+            timestamp: newAlert.timestamp,
+          },
+          { withCredentials: true },
+        );
       } catch (err) {
         console.error("Failed to save alert:", err);
       }
@@ -49,67 +53,73 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-  async function loadAlerts() {
-    try {
-      const res = await axios.get("http://localhost:3000/api/alert/all");
+    async function loadAlerts() {
+      try {
+        const res = await axios.get("http://localhost:3000/api/alert/all");
 
-      const dbAlerts = res.data.alerts.map((a: any) => ({
-        ...a,
-        timestamp: new Date(a.timestamp),
-      }));
+        const dbAlerts = res.data.alerts.map((a: any) => ({
+          ...a,
+          timestamp: new Date(a.timestamp),
+        }));
 
-      setAlerts(dbAlerts);
-    } catch (err) {
-      console.error("Failed to fetch alerts:", err);
+        setAlerts(dbAlerts);
+      } catch (err) {
+        console.error("Failed to fetch alerts:", err);
+      }
     }
-  }
 
-  loadAlerts();
-}, []);
-
+    loadAlerts();
+  }, []);
 
   const handleConfirmAlert = async (alertId: string) => {
     if (!sirenActive) {
-    setSirenActive(true);
+      setSirenActive(true);
 
-    socket.emit("trigger_siren", { deviceId: popupAlert?.deviceId });
+      // socket.emit("trigger_siren", { deviceId: popupAlert?.deviceId });
 
-    toast.error("Siren Triggered!", {
-      description: "Emergency siren has been activated at the location.",
-    });
-  } else {
-    console.log("⏳ Siren already active — ignoring duplicate trigger");
-  }
+      toast.error("Siren Triggered!", {
+        description: "Emergency siren has been activated at the location.",
+      });
+    } else {
+      console.log("⏳ Siren already active — ignoring duplicate trigger");
+    }
     setAlerts((prev) =>
       prev.map((alert) =>
         alert.id === alertId
           ? { ...alert, status: "CONFIRMED" as AlertStatus }
-          : alert
-      )
+          : alert,
+      ),
     );
     if (popupAlert?.id === alertId) setIsPopupOpen(false);
 
-    socket.emit("trigger_siren", { deviceId: popupAlert?.deviceId });
+    socket.emit("trigger_siren", {
+      deviceId: popupAlert?.deviceId,
+      latitude: popupAlert?.latitude,
+      longitude: popupAlert?.longitude,
+    });
     toast.success("Alert Confirmed", {
       description: "The incident has been confirmed and logged.",
     });
     try {
-      await axios.post("http://localhost:3000/api/alert/confirm", {
-        id: alertId,
-      },{ withCredentials: true });
+      await axios.post(
+        "http://localhost:3000/api/alert/confirm",
+        {
+          id: alertId,
+        },
+        { withCredentials: true },
+      );
     } catch (err) {
       console.error("Failed to confirm alert:", err);
     }
   };
 
   const handleDismissAlert = async (alertId: string) => {
-    
     setAlerts((prev) =>
       prev.map((alert) =>
         alert.id === alertId
           ? { ...alert, status: "DISMISSED" as AlertStatus }
-          : alert
-      )
+          : alert,
+      ),
     );
     if (popupAlert?.id === alertId) setIsPopupOpen(false);
 
@@ -117,7 +127,11 @@ export default function App() {
       description: "The alert has been marked as false alarm.",
     });
     try {
-      await axios.post("http://localhost:3000/api/alert/dismiss", { id: alertId },{ withCredentials: true });
+      await axios.post(
+        "http://localhost:3000/api/alert/dismiss",
+        { id: alertId },
+        { withCredentials: true },
+      );
     } catch (err) {
       console.error("Failed to dismiss alert:", err);
     }

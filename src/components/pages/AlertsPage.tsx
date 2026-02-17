@@ -99,8 +99,7 @@ export function AlertsPage() {
                     <div className="flex items-center gap-2 text-gray-400">
                       <Radio className="h-4 w-4" />
                       <span>
-                        Lat: {alert.latitude.toFixed(4)}, Lng:{" "}
-                        {alert.longitude.toFixed(4)}
+                        Lat: {alert.latitude?.toFixed(4)}, Lng: {alert.longitude?.toFixed(4)}
                       </span>
                     </div>
                   </div>
