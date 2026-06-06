@@ -1,73 +1,103 @@
-# React + TypeScript + Vite
+**SafeCam Dashboard**
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive web dashboard for monitoring and managing security cameras in the SafeCam surveillance system. Built with React, TypeScript, and Vite for a fast, type-safe, and maintainable user experience.
 
-Currently, two official plugins are available:
+### Features
+- **Camera Monitoring**: Live view, status overview, and multi-camera grid support.
+- **User Authentication**: Protected routes with secure login flows.
+- **Responsive Design**: Optimized for desktop and mobile using Tailwind CSS and shadcn/ui components.
+- **Real-time Updates**: Hooks and state management for dynamic camera feeds and alerts.
+- **Routing & Navigation**: Clean client-side routing with protected pages.
+- **Developer-Friendly**: TypeScript for type safety, ESLint for code quality, and Vite for lightning-fast development.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Tech Stack
+- **Frontend**: React 18 + TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS + shadcn/ui components
+- **Routing**: React Router (via `src/routes`)
+- **Other**: PostCSS, ESLint, environment configuration (`.env`)
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Project Structure
+```
+safecam-dashboard/
+├── public/
+├── src/
+│   ├── assets/          # Static assets (images, icons)
+│   ├── components/      # Reusable UI components
+│   ├── hooks/           # Custom React hooks
+│   ├── lib/             # Utility functions and libraries
+│   ├── routes/          # Routing logic (MainRoutes.tsx, ProtectedRoute.tsx)
+│   ├── App.tsx          # Main application component
+│   ├── main.tsx         # Entry point
+│   └── index.css        # Global styles
+├── .env                 # Environment variables
+├── package.json
+├── tailwind.config.js
+├── vite.config.ts
+└── README.md
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+#### Prerequisites
+- Node.js (v18+ recommended)
+- npm or yarn
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+#### Installation
+```bash
+# Clone the repository
+git clone https://github.com/Manith003/safecam-dashboard.git
+cd safecam-dashboard
+
+# Install dependencies
+npm install
 ```
+
+#### Environment Variables
+Create a `.env` file in the root directory (copy from `.env.example` if available) and configure your API endpoints, camera streams, or authentication keys.
+
+#### Development
+```bash
+npm run dev
+```
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+#### Build for Production
+```bash
+npm run build
+```
+
+#### Preview Production Build
+```bash
+npm run preview
+```
+
+#### Linting
+```bash
+npm run lint
+```
+
+### Usage
+1. Log in to access the dashboard (protected routes enforce authentication).
+2. View live camera feeds and manage devices.
+3. Navigate between monitoring, alerts, and settings pages.
+
+### Contributing
+Contributions are welcome! Please follow these steps:
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/amazing-feature`).
+3. Commit your changes (`git commit -m 'Add amazing feature'`).
+4. Push to the branch (`git push origin feature/amazing-feature`).
+5. Open a Pull Request.
+
+Please ensure your code passes linting and follows the existing TypeScript/React patterns.
+
+### License
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details (add one if not present).
+
+### Acknowledgments
+- Built on the Vite + React + TypeScript template.
+- UI components powered by shadcn/ui and Tailwind CSS.
+- Designed for seamless integration with SafeCam backend services.
+
+For issues or feature requests, please open an issue on GitHub.
